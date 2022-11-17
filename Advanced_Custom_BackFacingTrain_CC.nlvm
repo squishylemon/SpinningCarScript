@@ -81,19 +81,24 @@ public class Advanced_Custom_BackFacingTrain_CC extends Script
 			Camera1.setEnterWarpPointEnabled(true);
 			Camera1.setLabel(title+"Train " + car_num + ": Seat 1");
 			Camera1.setMorphingEnabled(false);
-			sco_Camera1.setRotation(1.5708f,0.0f,0.0f);}
+			sco_Camera1.setRotation(1.5708f,0.0f,0.0f);
+			sco_Camera1.setVisible(false);
+			}
 		if(sco_Camera2!=null){
 			Camera2 = sim.createExternalRideView();
 			Camera2.setEnterWarpPointEnabled(true);
 			Camera2.setLabel(title+"Train " + car_num + ": Seat 2");
 			Camera2.setMorphingEnabled(false);
-			sco_Camera2.setRotation(1.5708f,0.0f,0.0f);}
+			sco_Camera2.setRotation(1.5708f,0.0f,0.0f);
+			sco_Camera2.setVisible(false);
+			}
 		if(sco_Camera3!=null){
 			Camera3 = sim.createExternalRideView();
 			Camera3.setEnterWarpPointEnabled(true);
 			Camera3.setLabel(title+"Train " + car_num + ": Seat 3");
 			Camera3.setMorphingEnabled(false);
 			sco_Camera3.setRotation(1.5708f,0.0f,0.0f);
+			sco_Camera3.setVisible(false);
 		}
 		if(sco_Camera4!=null){
 			Camera4 = sim.createExternalRideView();
@@ -101,6 +106,7 @@ public class Advanced_Custom_BackFacingTrain_CC extends Script
 			Camera4.setLabel(title+"Train " + car_num + ": Seat 4");
 			Camera4.setMorphingEnabled(false);
 			sco_Camera4.setRotation(1.5708f,0.0f,0.0f);
+			sco_Camera4.setVisible(false);
 		}
 		if(sco_Camera5!=null){
 			Camera5 = sim.createExternalRideView();
@@ -108,6 +114,7 @@ public class Advanced_Custom_BackFacingTrain_CC extends Script
 			Camera5.setLabel(title+"Train " + car_num + ": Front View 1");
 			Camera5.setMorphingEnabled(false);
 			sco_Camera5.setRotation(1.5708f,0.0f,0.0f);
+			sco_Camera5.setVisible(false);
 		}
 		if(sco_Camera6!=null){
 			Camera6 = sim.createExternalRideView();
@@ -115,6 +122,7 @@ public class Advanced_Custom_BackFacingTrain_CC extends Script
 			Camera6.setLabel(title+"Train " + car_num + ": Front View 2");
 			Camera6.setMorphingEnabled(false);
 			sco_Camera6.setRotation(1.5708f,0.0f,0.0f);
+			sco_Camera6.setVisible(false);
 		}
 
 		//GET WHEELS
