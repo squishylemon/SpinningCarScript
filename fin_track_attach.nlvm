@@ -1,0 +1,27 @@
+// _______ ______   ______    _______ _______ _______  ______ _______ _______ ______   ______ 
+//(_______|____  \ / _____)  (_______|_______|_______)/ _____|_______|_______|_____ \ / _____)
+//     _   ____)  | (____     _       _     _ _______( (____     _    _____   _____) | (____  
+// _  | | |  __  ( \____ \   | |     | |   | |  ___  |\____ \   | |  |  ___) |  __  / \____ \ 
+//| |_| | | |__)  )_____) )  | |_____| |___| | |   | |_____) )  | |  | |_____| |  \ \ _____) )
+// \___/  |______/(______/    \______)\_____/|_|   |_(______/   |_|  |_______)_|   |_(______/ 
+//
+// PLAN ₿                                                                                     
+//
+// BTC: 19oUeJ9rkrJ1siGvnd4wahQVMGjDiFoAiN
+//
+// https://www.lookintobitcoin.com/
+
+import com.nolimitscoaster.*; import nlvm.math3d.*; public class fin_track_attach extends Script { static final String title = "JBS Coasters - Transport Track: "; private SceneObject sco; private SceneObjectElement[] lsm_sco_elements = new SceneObjectElement[100]; private SceneObjectElement temp; String coaster_name; int car_num = 1; Coaster coaster; Train train; float range = 1000.0f; Matrix4x4f offset_matrix = new Matrix4x4f(); Matrix4x4f matrix = new Matrix4x4f(); private Vector3f rotation = new Vector3f(); private Vector3f position = new Vector3f(); TrackPos track_pos; int lsm_elements=1; bool attached = true; bool transferTable = false; bool dropTrack = false; bool transferTableExit = false; public bool onInit() { sco=sim.getSceneObjectForEntityId(getParentEntityId()); if(sco==null){System.err.println(title+"sco not found.");return false;} track_pos = sim.findNearestCoasterTrack(sco.getTranslation(), 20.0f); if(track_pos==null){System.err.println(title+"No Track Found.");return false;} sco.setTranslation(0.0f,0.0f,0.0f); sco.setRotation(0.0f,0.0f,0.0f); int count = sco.getIntegerParameter("count").intValue(); if(count>100){count=100;} float offset=0.0f; for (lsm_elements = 1; lsm_elements < 100; lsm_elements++) { lsm_sco_elements[lsm_elements]=sco.getElementForName(("LSM_"+lsm_elements).toString()); if(lsm_elements>=count){ lsm_sco_elements[lsm_elements].setTranslation(5000,3000,-1000); }else{ track_pos=track_pos.getTrackPosOnCenterRailsWithOffset(0.65f); matrix=track_pos.getCenterRailsMatrix(); lsm_sco_elements[lsm_elements].setMatrix(matrix); offset+=0.65f; } } return true; } private void setTransform(SceneObject sco, Vector3f pos, Vector3f rot) { sco.setTranslation(pos.x,pos.y,pos.z); sco.setRotation(rot.x,rot.y,rot.z); } } 
+
+// _______ ______   ______    _______ _______ _______  ______ _______ _______ ______   ______ 
+//(_______|____  \ / _____)  (_______|_______|_______)/ _____|_______|_______|_____ \ / _____)
+//     _   ____)  | (____     _       _     _ _______( (____     _    _____   _____) | (____  
+// _  | | |  __  ( \____ \   | |     | |   | |  ___  |\____ \   | |  |  ___) |  __  / \____ \ 
+//| |_| | | |__)  )_____) )  | |_____| |___| | |   | |_____) )  | |  | |_____| |  \ \ _____) )
+// \___/  |______/(______/    \______)\_____/|_|   |_(______/   |_|  |_______)_|   |_(______/ 
+//
+// PLAN ₿                                                                                     
+//
+// BTC: 19oUeJ9rkrJ1siGvnd4wahQVMGjDiFoAiN
+//
+// https://www.lookintobitcoin.com/

@@ -1,0 +1,407 @@
+import com.nolimitscoaster.*;
+import nlvm.math3d.*;
+
+public class Advanced_Custom_SpinSeat_CC extends Script implements TrackTriggerListener
+{
+	SceneObject sco;
+    Coaster coaster;
+	String coaster_name;
+	Block station;
+
+	TrackPos trackPos;
+	bool spinning = false;
+
+	float seatVerticalOffset = 0.5f;			// move spinning seats up/down 
+	float seatForwardOffset = 0.1f;             // move spinning seats forward/backwards
+
+	private String title = "Spinning Seat";
+
+	int car_num = 1;
+	float range = 5000.0f;
+	bool Locked = true;
+	double Speed;
+	private SceneObjectElement Harness01;
+	private SceneObjectElement Harness02;
+	private SceneObjectElement Harness03;
+	private SceneObjectElement Harness04;
+	
+	private SceneObjectElement sco_Camera1;
+	private SceneObjectElement sco_Camera2;
+	private SceneObjectElement sco_Camera3;
+	private SceneObjectElement sco_Camera4;
+
+	private SceneObjectElement sco_SeatBase1;
+	private SceneObjectElement sco_SeatBase2;
+	private SceneObjectElement sco_SeatBase3;
+	private SceneObjectElement sco_SeatBase4;
+
+	ExternalRideView Camera1;
+	ExternalRideView Camera2;
+	ExternalRideView Camera3;
+	ExternalRideView Camera4;
+
+	float seatBase1_weight = 50.0f;
+	float seatBase2_weight = 500.0f;
+	float seatBase3_weight = 50.0f;
+	float seatBase4_weight = 90.0f;
+	
+	float torqueextra =  0.000001f;
+	float dragextra = 0.01f;
+
+	Vector3f lastPos = new Vector3f(0,0,0);
+	Vector3f lastVel = new Vector3f(0,0,0);
+
+	float SpeedF;
+	Train train;
+	TrackTrigger lock;
+	TrackTrigger unlock;
+	Vector3f[] camEntryPoint = new Vector3f[5];
+
+	Matrix4x4f[] cameraLocation = new Matrix4x4f[5];
+	private Vector3f posOut = new Vector3f(0,0,0);
+	private Vector3f pitchHeadBankOut = new Vector3f(0,0,0);
+	ExternalRideView[] erv = new ExternalRideView[5];
+	int carToAttach;
+	bool bogie;
+	bool camerasEnabled;
+	float spinVel = 0;
+	int spinintensity = 2;
+	float spininten;
+	float spino;
+	
+	float spin = 0;
+	float lastYaw = 0.0f;
+	bool firstFrame = true;
+	int delayFrames = 0;
+	float lockStrength = 0.0f;
+	float lockStrengthMult = 1.0f;
+	
+
+	public void onTrainEntering(TrackTrigger trigger, Train train)
+	{
+//		myMethod();
+	}
+
+	public void onTrainLeaving(TrackTrigger trigger, Train triggertrain)
+	{
+	  if(trigger==UnlockSpin && triggertrain == train)
+	  { 
+		
+		Locked = false;
+		
+	
+	  }
+	if(trigger==LockSpin && triggertrain == train)
+	  { 
+		
+		Locked = true;
+	  }
+	}
+
+	public bool onInit()
+	{
+	
+		sco=sim.getSceneObjectForEntityId(getParentEntityId());
+		
+		coaster = sco.getCoasterParameter("coaster_name");
+		
+		torqueextra = sco.getDoubleParameter("spintorque").floatValue();
+		torqueextra = torqueextra / 1000000;
+		dragextra = sco.getDoubleParameter("spindrag").floatValue();
+		dragextra = dragextra / 100;
+		seatBase3_weight = sco.getDoubleParameter("seat3w").floatValue();
+		seatBase4_weight = sco.getDoubleParameter("seat4w").floatValue();
+		seatBase1_weight = sco.getDoubleParameter("seat1w").floatValue();
+		seatBase2_weight = sco.getDoubleParameter("seat2w").floatValue();
+		seatVerticalOffset = sco.getDoubleParameter("seatsvo").floatValue();
+		seatForwardOffset = sco.getDoubleParameter("seatsfo").floatValue();
+		lockStrengthMult = sco.getDoubleParameter("lockstr").floatValue();
+		
+		car_num = sco.getIntegerParameter("car_num").intValue();
+		spininten = spinintensity/10;
+		
+		Harness01 = sco.getElementForName("Harness01");
+		Harness02 = sco.getElementForName("Harness02");
+		Harness03 = sco.getElementForName("Harness03");
+		Harness04 = sco.getElementForName("Harness04");
+		
+		if (sco.getElementForName("Cam01")!=null) {
+		sco_Camera1 = sco.getElementForName("Cam01");
+		sco_Camera1.setVisible(false);
+		}
+		if (sco.getElementForName("Cam02")!=null) {
+		sco_Camera2 = sco.getElementForName("Cam02");
+		sco_Camera2.setVisible(false);
+		}
+		if (sco.getElementForName("Cam03")!=null) {
+		sco_Camera3 = sco.getElementForName("Cam03");
+		sco_Camera3.setVisible(false);
+		}
+		
+		if (sco.getElementForName("Cam04")!=null) {
+		sco_Camera4 = sco.getElementForName("Cam04");
+		sco_Camera4.setVisible(false);
+		}
+
+		if (sco.getElementForName("SeatBase01")!=null) {
+		sco_SeatBase1 = sco.getElementForName("SeatBase01");
+		sco_SeatBase1.setVisible(false);
+		}
+		
+		if (sco.getElementForName("SeatBase02")!=null) {
+		sco_SeatBase2 = sco.getElementForName("SeatBase02");
+		sco_SeatBase2.setVisible(false);
+		}
+		
+		if (sco.getElementForName("SeatBase03")!=null) {
+		sco_SeatBase3 = sco.getElementForName("SeatBase03");
+		sco_SeatBase3.setVisible(false);
+		}
+		
+		if (sco.getElementForName("SeatBase04")!=null) {
+		sco_SeatBase4 = sco.getElementForName("SeatBase04");
+		sco_SeatBase4.setVisible(false);
+		}
+
+		Matrix4x4f mat = sco.getAbsoluteMatrix();
+		lastPos = mat.getTrans();
+		delayFrames = 10;
+		
+		if(sco_Camera1!=null){
+			Camera1 = sim.createExternalRideView();
+			Camera1.setEnterWarpPointEnabled(true);
+			Camera1.setLabel(title+"Train " + car_num + ": Seat 1");
+			Camera1.setMorphingEnabled(false);
+			sco_Camera1.setRotation(1.5708f,0.0f,0.0f);}
+		if(sco_Camera2!=null){
+			Camera2 = sim.createExternalRideView();
+			Camera2.setEnterWarpPointEnabled(true);
+			Camera2.setLabel(title+"Train " + car_num + ": Seat 2");
+			Camera2.setMorphingEnabled(false);
+			sco_Camera2.setRotation(1.5708f,0.0f,0.0f);}
+		if(sco_Camera3!=null){
+			Camera3 = sim.createExternalRideView();
+			Camera3.setEnterWarpPointEnabled(true);
+			Camera3.setLabel(title+"Train " + car_num + ": Seat 3");
+			Camera3.setMorphingEnabled(false);
+			sco_Camera3.setRotation(1.5708f,0.0f,0.0f);
+		}
+		if(sco_Camera4!=null){
+			Camera4 = sim.createExternalRideView();
+			Camera4.setEnterWarpPointEnabled(true);
+			Camera4.setLabel(title+"Train " + car_num + ": Seat 4");
+			Camera4.setMorphingEnabled(false);
+			sco_Camera4.setRotation(1.5708f,0.0f,0.0f);
+		}
+
+	
+		LockSpin = sco.getTrackTriggerParameter("lock");
+		if (LockSpin != null)
+		{
+			LockSpin.addTrackTriggerListener(this);
+		}
+		else
+		{
+			System.err.println("No Lock Spin Found!");
+		}
+
+		UnlockSpin = sco.getTrackTriggerParameter("unlock");
+		if (UnlockSpin != null)
+		{
+			UnlockSpin.addTrackTriggerListener(this);
+		}
+		else
+		{
+			System.err.println("No Unlock Spin Found!");
+		}
+
+		
+		carToAttach = car_num;
+		bogie = false;
+		camerasEnabled = true;
+		sco = sim.getSceneObjectForEntityId(getParentEntityId());
+		if(sco == null)
+		{
+			System.err.println("Not bound to a Scene Object!");
+			return false;
+		}
+		trackPos = sim.findNearestCoasterTrack(sco.getTranslation(), range);
+		if (trackPos == null)
+		{
+			System.err.println(" No track found within range of " + range + " meters.");
+			return false;
+		}
+
+		train = coaster.findNearestTrain(sco.getTranslation(), range);
+		if (train == null)
+		{
+			System.err.println(" No train found within range of " + range + " meters.");
+			return false;
+		}
+
+		return true;
+	}
+
+	private TrackTrigger LockSpin;
+	private TrackTrigger UnlockSpin;
+	
+	//CURVE NORM NUMBER
+	float curveNorm(float norm){
+		return ((1-norm)*(norm*norm)+norm*(1-((norm-1)*(norm-1))));
+	}
+	
+	//CAM POS CODE
+	private void Set_Camera_Pos(SceneObjectElement sco_cam, ExternalRideView cam, float warp_distance) {
+		Matrix4x4f carMatrix = new Matrix4x4f();
+		sco.getMatrix(carMatrix);
+		carMatrix.multRight(sco_cam.getMatrix());
+		cam.setCameraMatrix(carMatrix);
+		cam.setEnterWarpPoint(carMatrix.getTrans(),warp_distance);
+	}
+
+	private float CalcTorque(SceneObjectElement seat, SceneObject platform, float weight, Vector3f acc)
+	{
+		if (seat != null)
+		{
+			Matrix4x4f seatMatrix = seat.getAbsoluteMatrix();
+			Matrix4x4f platformMatrix = platform.getAbsoluteMatrix();
+			Vector3f seatPos = seatMatrix.getTrans();
+			Vector3f platformPos = platformMatrix.getTrans();
+
+			Vector3f toSeat = new Vector3f(seatPos);
+			toSeat.sub(platformPos);
+			toSeat.normalize();
+
+			Vector3f platformUp = new Vector3f( platformMatrix.elemAt(1,0), platformMatrix.elemAt(1,1), platformMatrix.elemAt(1,2));
+			platformUp.normalize();
+
+			Vector3f platformTangent = new Vector3f(0,0,0);
+			platformTangent.cross(platformUp,toSeat);
+
+			Vector3f force = new Vector3f(acc);
+			force.mul(weight);
+			float torque = platformTangent.dot(force);
+			return torque;
+		}
+		return 0.0f;
+	}
+
+
+	public void onNextFrame(float tick)
+	{
+		float SimSpeed = sim.getCurSimulationSpeed();
+
+		Matrix4x4f mat = sco.getAbsoluteMatrix();
+		Vector3f newPos = new Vector3f(mat.getTrans());
+		Vector3f newVel = new Vector3f(newPos);
+		newVel.sub(lastPos);
+		newVel.div(tick);
+
+		Vector3f acc = new Vector3f(newVel);
+		acc.sub(lastVel);
+		acc.div(-tick);
+
+		Vector3f gravity = new Vector3f(0, -10, 0);
+		acc.add(gravity);
+
+		if (delayFrames > 0)
+		{
+			delayFrames = delayFrames -1;
+			acc = new Vector3f(0,0,0);
+		}
+
+		lastPos = new Vector3f(newPos);
+		lastVel = new Vector3f(newVel);
+
+		// get matrix of car we will be attaching to
+		Matrix4x4f carMatrix = new Matrix4x4f();
+		train.getCarMatrix(carToAttach, carMatrix);
+
+		// get car position
+		Matrix4x4f spinMatrix = new Matrix4x4f();
+		spinMatrix.initYRot(spin);
+		spinMatrix.setElemAt(3,2,-seatForwardOffset);
+		spinMatrix.setElemAt(3,1,seatVerticalOffset);
+		carMatrix.multRight(spinMatrix);	
+		sco.setMatrix(carMatrix);
+
+		// need to calculate gravity force perpendicular to the vector from pivot to seat
+		float torque = 0.0f;
+		torque += CalcTorque(sco_SeatBase1, sco, seatBase1_weight, acc);
+		torque += CalcTorque(sco_SeatBase2, sco, seatBase2_weight, acc);
+		torque += CalcTorque(sco_SeatBase3, sco, seatBase3_weight, acc);
+		torque += CalcTorque(sco_SeatBase4, sco, seatBase4_weight, acc);
+
+		// normalise spin
+		float pi = 3.14159265358f;
+		while (spin < pi)
+			spin += pi*2.0f;
+		while (spin > pi)
+			spin -= pi*2.0f;
+
+		// lock spin back to 0 when lock i true
+		if (Locked == true ) 
+		{
+			lockStrength = Math.min(0.5f, lockStrength + tick * 0.001f * lockStrengthMult * SimSpeed );
+
+			float fixedVel;
+			if (spinVel < 0)
+			{
+				fixedVel = -0.05f;
+			}
+			else
+			{
+				fixedVel = 0.05f;
+			}
+			spinVel = spinVel * (1.0f-lockStrength) + fixedVel * lockStrength * SimSpeed;
+
+			// hard clamp if spin is near 0
+			if (Math.abs(spin) < 0.1f)
+			{
+				spinVel = spinVel * 0.9f * SimSpeed;
+				spin = spin * 0.9f * SimSpeed;
+
+				
+			}
+		}
+		else
+		{
+			lockStrength = 0.0f;
+
+			// torque
+			spinVel = spinVel + torque * tick * torqueextra * 60.0f * SimSpeed;
+		}
+
+		spin = spin + spinVel * tick * 60.0f * SimSpeed;
+
+		// drag
+		spinVel = spinVel - spinVel * dragextra * tick * 60.0f * SimSpeed;
+
+		// bring harness up/down as required
+		if(Harness01!=null){Harness01.setRotation(curveNorm(curveNorm(train.getHarnessState()))*2.0f, 0.0f, 0.0f);}//HARNESS ROT
+		if(Harness02!=null){Harness02.setRotation(curveNorm(train.getHarnessState())*2.0f, 0.0f, 0.0f);}
+		if(Harness03!=null){Harness03.setRotation(curveNorm(curveNorm(train.getHarnessState()))*2.0f, 0.0f, 0.0f);}
+		if(Harness04!=null){Harness04.setRotation(curveNorm(curveNorm(curveNorm(train.getHarnessState())))*2.0f, 0.0f, 0.0f);}
+
+		// set camera positions allow us to go into first person mode on the chair
+		if(sco_Camera1!=null){Set_Camera_Pos(sco_Camera1, Camera1, 2.0f);}
+		if(sco_Camera2!=null){Set_Camera_Pos(sco_Camera2, Camera2, 2.0f);}
+		if(sco_Camera3!=null){Set_Camera_Pos(sco_Camera3, Camera3, 2.0f);}
+		if(sco_Camera4!=null){Set_Camera_Pos(sco_Camera4, Camera4, 2.0f);}
+
+		// When harness is open, we morph the player into the seat
+		// But when the harness is closed, we snap the player to the seat
+		if(train.getHarnessState()==1){
+			if(Camera1!=null){Camera1.setMorphingEnabled(true);}
+			if(Camera2!=null){Camera2.setMorphingEnabled(true);}
+			if(Camera3!=null){Camera3.setMorphingEnabled(true);}
+			if(Camera4!=null){Camera4.setMorphingEnabled(true);}
+		}else{
+			if(Camera1!=null){Camera1.setMorphingEnabled(false);}
+			if(Camera2!=null){Camera2.setMorphingEnabled(false);}
+			if(Camera3!=null){Camera3.setMorphingEnabled(false);}
+			if(Camera4!=null){Camera4.setMorphingEnabled(false);}
+		}
+	}
+}
+

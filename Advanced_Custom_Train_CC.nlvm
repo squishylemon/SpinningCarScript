@@ -1,0 +1,239 @@
+// _______ ______   ______    _______ _______ _______  ______ _______ _______ ______   ______ 
+//(_______|____  \ / _____)  (_______|_______|_______)/ _____|_______|_______|_____ \ / _____)
+//     _   ____)  | (____     _       _     _ _______( (____     _    _____   _____) | (____  
+// _  | | |  __  ( \____ \   | |     | |   | |  ___  |\____ \   | |  |  ___) |  __  / \____ \ 
+//| |_| | | |__)  )_____) )  | |_____| |___| | |   | |_____) )  | |  | |_____| |  \ \ _____) )
+// \___/  |______/(______/    \______)\_____/|_|   |_(______/   |_|  |_______)_|   |_(______/ 
+//
+// PLAN ₿                                                                                     
+//
+// BTC: 19oUeJ9rkrJ1siGvnd4wahQVMGjDiFoAiN
+//
+// https://www.lookintobitcoin.com/
+
+import com.nolimitscoaster.*;import nlvm.math3d.*;
+public class Advanced_Custom_Train_CC extends Script
+{
+
+	//VARS
+	static final String title = "JBS Coasters - Car Script: ";
+	private SceneObject sco;
+	String coaster_name;
+	int car_num = 1;
+	Coaster coaster;
+	Train train;
+	float range = 20.0f;
+	bool attached = true;
+	private SceneObjectElement sco_Camera1;
+	private SceneObjectElement sco_Camera2;
+	private SceneObjectElement sco_Camera3;
+	private SceneObjectElement sco_Camera4;
+	private SceneObjectElement sco_Camera5;
+	private SceneObjectElement sco_Camera6;
+	ExternalRideView Camera1;
+	ExternalRideView Camera2;
+	ExternalRideView Camera3;
+	ExternalRideView Camera4;
+	ExternalRideView Camera5;
+	ExternalRideView Camera6;
+	float BigWheelMod = 6.0f;
+	float BigWheelRot = 0.0f;
+	private SceneObjectElement BigWheel01;
+	private SceneObjectElement BigWheel02;
+	private SceneObjectElement BigWheel03;
+	private SceneObjectElement BigWheel04;
+	float SmallWheelMod = 4.2f;
+	float SmallWheelRot = 0.0f;
+	private SceneObjectElement SmallWheel01;
+	private SceneObjectElement SmallWheel02;
+	private SceneObjectElement SmallWheel03;
+	private SceneObjectElement SmallWheel04;
+	private SceneObjectElement SmallWheel05;
+	private SceneObjectElement SmallWheel06;
+	private SceneObjectElement SmallWheel07;
+	private SceneObjectElement SmallWheel08;
+	private SceneObjectElement Harness01;
+	private SceneObjectElement Harness02;
+	private SceneObjectElement Harness03;
+	private SceneObjectElement Harness04;
+
+	//CODE BEFORE SIM
+	public bool onInit() 
+	{
+//		System.out.println(title+"BTC ADDRESS: 19oUeJ9rkrJ1siGvnd4wahQVMGjDiFoAiN");
+		sco=sim.getSceneObjectForEntityId(getParentEntityId());
+		if(sco==null){System.err.println(title+"sco_00 not found");return false;}
+		car_num = sco.getIntegerParameter("car_num").intValue();
+		coaster = sco.getCoasterParameter("coaster_name");
+		if(coaster==null){System.err.println(title+"Coaster Not found.");return false;}
+		train = coaster.findNearestTrain(sco.getTranslation(), range);
+		if(train==null){System.err.println(title+"Car not found within "+ range +" meters, make sure the correct coaster is selected and that it has a unique name.");return false;}
+
+		//GET CAMS
+		sco_Camera1 = sco.getElementForName("Cam01");
+		sco_Camera2 = sco.getElementForName("Cam02");
+		sco_Camera3 = sco.getElementForName("Cam03");
+		sco_Camera4 = sco.getElementForName("Cam04");
+		sco_Camera5 = sco.getElementForName("Cam05");
+		sco_Camera6 = sco.getElementForName("Cam06");
+		if(sco_Camera1!=null){
+			Camera1 = sim.createExternalRideView();
+			Camera1.setEnterWarpPointEnabled(true);
+			Camera1.setLabel(title+"Train " + car_num + ": Seat 1");
+			Camera1.setMorphingEnabled(false);
+			sco_Camera1.setRotation(1.5708f,0.0f,0.0f);}
+		if(sco_Camera2!=null){
+			Camera2 = sim.createExternalRideView();
+			Camera2.setEnterWarpPointEnabled(true);
+			Camera2.setLabel(title+"Train " + car_num + ": Seat 2");
+			Camera2.setMorphingEnabled(false);
+			sco_Camera2.setRotation(1.5708f,0.0f,0.0f);}
+		if(sco_Camera3!=null){
+			Camera3 = sim.createExternalRideView();
+			Camera3.setEnterWarpPointEnabled(true);
+			Camera3.setLabel(title+"Train " + car_num + ": Seat 3");
+			Camera3.setMorphingEnabled(false);
+			sco_Camera3.setRotation(1.5708f,0.0f,0.0f);
+		}
+		if(sco_Camera4!=null){
+			Camera4 = sim.createExternalRideView();
+			Camera4.setEnterWarpPointEnabled(true);
+			Camera4.setLabel(title+"Train " + car_num + ": Seat 4");
+			Camera4.setMorphingEnabled(false);
+			sco_Camera4.setRotation(1.5708f,0.0f,0.0f);
+		}
+		if(sco_Camera5!=null){
+			Camera5 = sim.createExternalRideView();
+			Camera5.setEnterWarpPointEnabled(true);
+			Camera5.setLabel(title+"Train " + car_num + ": Front View 1");
+			Camera5.setMorphingEnabled(false);
+			sco_Camera5.setRotation(1.5708f,0.0f,0.0f);
+		}
+		if(sco_Camera6!=null){
+			Camera6 = sim.createExternalRideView();
+			Camera6.setEnterWarpPointEnabled(true);
+			Camera6.setLabel(title+"Train " + car_num + ": Front View 2");
+			Camera6.setMorphingEnabled(false);
+			sco_Camera6.setRotation(1.5708f,0.0f,0.0f);
+		}
+
+		//GET WHEELS
+		BigWheel01 = sco.getElementForName("LARGE01");
+		BigWheel02 = sco.getElementForName("LARGE02");
+		BigWheel03 = sco.getElementForName("LARGE03");
+		BigWheel04 = sco.getElementForName("LARGE04");
+		SmallWheel01 = sco.getElementForName("SMALL01");
+		SmallWheel02 = sco.getElementForName("SMALL02");
+		SmallWheel03 = sco.getElementForName("SMALL03");
+		SmallWheel04 = sco.getElementForName("SMALL04");
+		SmallWheel05 = sco.getElementForName("SMALL05");
+		SmallWheel06 = sco.getElementForName("SMALL06");
+		SmallWheel07 = sco.getElementForName("SMALL07");
+		SmallWheel08 = sco.getElementForName("SMALL08");
+		Harness01 = sco.getElementForName("Harness01");
+		Harness02 = sco.getElementForName("Harness02");
+		Harness03 = sco.getElementForName("Harness03");
+		Harness04 = sco.getElementForName("Harness04");
+		return true;
+	}
+
+	//CURVE NORM NUMBER
+	float curveNorm(float norm){
+		return ((1-norm)*(norm*norm)+norm*(1-((norm-1)*(norm-1))));
+	}
+
+	//TRANSFORM
+	private void setTransform(SceneObject sco, Vector3f pos, Vector3f rot) {
+		sco.setTranslation(pos.x,pos.y,pos.z);
+		sco.setRotation(rot.x,rot.y,rot.z);
+	}
+
+	//CAR ATTACH
+	private void carAttach(SceneObject sco, int index) {
+		Matrix4x4f carMatrix = new Matrix4x4f();
+		train.getCarMatrix(index, carMatrix);
+		Vector3f pos = new Vector3f();Vector3f rot = new Vector3f();
+		Tools.matrixToPitchHeadBankPos(carMatrix, rot, pos);
+		setTransform(sco,pos, rot);
+	}
+
+	//BOGIE ATTACH
+	private void bogieAttach(SceneObject sco, int index) {
+		Matrix4x4f bogieMatrix = new Matrix4x4f();
+		train.getBogieMatrix(index, bogieMatrix);
+		Vector3f pos = new Vector3f();Vector3f rot = new Vector3f();
+		Tools.matrixToPitchHeadBankPos(bogieMatrix, rot, pos);
+		setTransform(sco,pos, rot);
+	}
+
+	//CAM POS CODE
+	private void Set_Camera_Pos(SceneObjectElement sco_cam, ExternalRideView cam, float warp_distance) {
+		Matrix4x4f carMatrix = new Matrix4x4f();
+		sco.getMatrix(carMatrix);
+		carMatrix.multRight(sco_cam.getMatrix());
+		cam.setCameraMatrix(carMatrix);
+		cam.setEnterWarpPoint(carMatrix.getTrans(),warp_distance);
+	}
+
+	//CODE TO RUN ON EACH FRAME
+  	public void onNextFrame(float tick)
+  	{
+		if(attached==true){
+			if(BigWheel01==null){//ATTACH TO BOGIE OR CAR
+				carAttach(sco,car_num);
+			}else{
+				bogieAttach(sco,car_num);
+			}
+			if(BigWheel01!=null){//WHEEL ROTATION
+				BigWheelRot -= sim.getCurSimulationTickSec()*train.getSpeed()*BigWheelMod;
+				BigWheel01.setRotation(BigWheelRot,0.0f,0.0f);
+				BigWheel02.setRotation(BigWheelRot,0.0f,0.0f);
+				BigWheel03.setRotation(BigWheelRot,0.0f,0.0f);
+				BigWheel04.setRotation(BigWheelRot,0.0f,0.0f);
+				SmallWheelRot -= sim.getCurSimulationTickSec()*train.getSpeed()*BigWheelMod;
+				SmallWheel01.setRotation(0.0f,-SmallWheelRot,0.0f);
+				SmallWheel02.setRotation(0.0f,-SmallWheelRot,0.0f);
+				SmallWheel03.setRotation(-SmallWheelRot,0.0f,0.0f);
+				SmallWheel04.setRotation(-SmallWheelRot,0.0f,0.0f);
+				SmallWheel05.setRotation(0.0f,SmallWheelRot,0.0f);
+				SmallWheel06.setRotation(0.0f,SmallWheelRot,0.0f);
+				SmallWheel07.setRotation(-SmallWheelRot,0.0f,0.0f);
+				SmallWheel08.setRotation(-SmallWheelRot,0.0f,0.0f);
+			}
+		}
+			if(sco_Camera1!=null){Set_Camera_Pos(sco_Camera1, Camera1, 2.0f);}//CAM POS
+			if(sco_Camera2!=null){Set_Camera_Pos(sco_Camera2, Camera2, 2.0f);}
+			if(sco_Camera3!=null){Set_Camera_Pos(sco_Camera3, Camera3, 2.0f);}
+			if(sco_Camera4!=null){Set_Camera_Pos(sco_Camera4, Camera4, 2.0f);}
+			if(sco_Camera5!=null){Set_Camera_Pos(sco_Camera5, Camera5, 15.0f);}
+			if(sco_Camera6!=null){Set_Camera_Pos(sco_Camera6, Camera6, 2.0f);}
+			if(Harness01!=null){Harness01.setRotation(curveNorm(curveNorm(train.getHarnessState()))*2.0f, 0.0f, 0.0f);}//HARNESS ROT
+			if(Harness02!=null){Harness02.setRotation(curveNorm(train.getHarnessState())*2.0f, 0.0f, 0.0f);}
+			if(Harness03!=null){Harness03.setRotation(curveNorm(curveNorm(train.getHarnessState()))*2.0f, 0.0f, 0.0f);}
+			if(Harness04!=null){Harness04.setRotation(curveNorm(curveNorm(curveNorm(train.getHarnessState())))*2.0f, 0.0f, 0.0f);}
+			if(train.getHarnessState()==1){//MORPHING WHILE HARNESS OPEN
+				if(Camera1!=null){Camera1.setMorphingEnabled(true);}
+				if(Camera2!=null){Camera2.setMorphingEnabled(true);}
+				if(Camera3!=null){Camera3.setMorphingEnabled(true);}
+				if(Camera4!=null){Camera4.setMorphingEnabled(true);}
+			}else{
+				if(Camera1!=null){Camera1.setMorphingEnabled(false);}
+				if(Camera2!=null){Camera2.setMorphingEnabled(false);}
+				if(Camera3!=null){Camera3.setMorphingEnabled(false);}
+				if(Camera4!=null){Camera4.setMorphingEnabled(false);}
+			}
+  	}
+}
+
+// _______ ______   ______    _______ _______ _______  ______ _______ _______ ______   ______ 
+//(_______|____  \ / _____)  (_______|_______|_______)/ _____|_______|_______|_____ \ / _____)
+//     _   ____)  | (____     _       _     _ _______( (____     _    _____   _____) | (____  
+// _  | | |  __  ( \____ \   | |     | |   | |  ___  |\____ \   | |  |  ___) |  __  / \____ \ 
+//| |_| | | |__)  )_____) )  | |_____| |___| | |   | |_____) )  | |  | |_____| |  \ \ _____) )
+// \___/  |______/(______/    \______)\_____/|_|   |_(______/   |_|  |_______)_|   |_(______/ 
+//
+// PLAN ₿                                                                                     
+//
+// BTC: 19oUeJ9rkrJ1siGvnd4wahQVMGjDiFoAiN
+//
+// https://www.lookintobitcoin.com/
